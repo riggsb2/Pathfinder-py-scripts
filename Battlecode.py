@@ -143,7 +143,7 @@ def battle(armyfile,enemyfile,simulations):
             rnd_length=(len(Battlefield))
             #loops through entire battlefiled
                         
-            #print(len(Battlefield))
+            #print('Rnd length', len(Battlefield))
             #print(Battlefield)            
             for rnd_count in range(rnd_length):
                 #Check who is in what slot of a position
@@ -208,13 +208,11 @@ def battle(armyfile,enemyfile,simulations):
             for rnd_count in range(rnd_length):
                 for Slot in range(len(Battlefield[rnd_count])):
                     #print('Deathcheck',rnd_count,Slot)                    
-                    #if Battlefield[rnd_count][Slot][0] == b'0':
-                        #break
                     if Battlefield[rnd_count][Slot][1] <=b'0':
                         if Battlefield[rnd_count][Slot][9] ==b'A':
-                            Ally_army[rnd_count] = []
+                            del Ally_army[-1]
                         elif Battlefield[rnd_count][Slot][9] ==b'E':
-                            Enemy_army[rnd_count] = []                        
+                            del Enemy_army[-1]                        
                         #print('Dead', rnd_count, Slot, Battlefield[rnd_count][Slot])                        
                         Battlefield[rnd_count][Slot]=['','','','','','','','','','']
                                     
@@ -244,11 +242,11 @@ def battle(armyfile,enemyfile,simulations):
             #print('Everyone is dead.')
             Dead+=1
     #print(Battlefield)
-    WinRatio = round((Awin/simulations)*100)
+    WinRatio = round((Awin/simulations)*100)    
     return(WinRatio)
     #print('Ally wins: ',Awin)
     #print('Enemy wins: ', Ewin)
     #print('Complete destruction: ',Dead)
 
-#print('Allies win: ', battle('Party.csv','Blaze Boa.csv',1000),'%')  
-print(battle('Party.csv','Blaze Boa.csv',1000))
+print('Allies win: ', battle('Party.csv','Encounter army.csv',1000),'%')  
+
