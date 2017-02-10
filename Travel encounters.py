@@ -51,9 +51,9 @@ for i in range(1,len(Itinerary)):   #loops through the days of travel
             DmgRng = int(Monster_table[j][6])
                     
             Exp = int(monster_cnt*monster_exp)
-            print(monster)
+            #print(monster)
             
-            print(Exp) 
+            #print(Exp) 
             if monster == 'Nothing':
                 Exp = 0
             Encounter_stat = np.array(['Number',"Type",
@@ -63,7 +63,7 @@ for i in range(1,len(Itinerary)):   #loops through the days of travel
                             HP,AC,HitBonus,DmgBonus,DmgRng,
                             0,0,0])
             total_exp += Exp
-            print(total_exp)
+            #print(total_exp)
 
             Encounter_stat = np.vstack((Encounter_stat,monster_stat))
             np.savetxt('Encounter army.csv', Encounter_stat,fmt='%.20s', delimiter=",")

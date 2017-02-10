@@ -278,19 +278,22 @@ def battle(armyfile,enemyfile,simulations):
         Enemy_survlst.append(Enemy_surv)
         #print(Enemy_surv)
         #print("Run complete")
-    print(Enemy_survlst)
     
-    print("Simulation Complete")
+    
+    print("Battles Complete")
     #print(Battlefield)
-    print("Allies alive:", int(sum(Ally_survlst)/len(Ally_survlst)))
-    print("Enemies alive:", int(sum(Enemy_survlst)/len(Enemy_survlst)))
+    Ally_avg = int(sum(Ally_survlst)/len(Ally_survlst))
+    Enemy_avg= int(sum(Enemy_survlst)/len(Enemy_survlst))
+    
+    #print("Allies alive:", Ally_avg)
+    #print("Enemies alive:", Enemy_avg)
         
     WinRatio = round((Awin/simulations)*100)    
-    return(WinRatio)
+    return(WinRatio, Ally_avg, Enemy_avg )
     #print('Ally wins: ',Awin)
     #print('Enemy wins: ', Ewin)
     #print('Complete destruction: ',Dead)
 
 
-print('Allies win: ', battle('Party.csv','Enemy army.csv',100),'%')  
+print('Allies win: ', battle('Ally army.csv','Enemy army.csv',100)[0],'%')  
 
