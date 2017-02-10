@@ -1,2 +1,2 @@
-Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Roll,Dmg,Pos
-1,Blaze Boa,60,17,10,0,12,0,0,0
+Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit Rng,Dmg,Pos
+1,Blaze Boa,60,17,10,0,12,20,0,0
