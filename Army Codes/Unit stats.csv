@@ -1,0 +1,4 @@
+Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit,Dmg,Pos
+120,ELevel1,11,13,5,1,6,20,0,0
+9,ELevel2,25,13,6,6,10,20,0,0
+1,Zer'ek,24,19,4,3,8,20,0,0

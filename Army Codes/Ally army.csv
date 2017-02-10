@@ -1,0 +1,4 @@
+Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit,Dmg,Pos
+48,Conscripts,9,14,4,1,6,20,0,0
+15,Guards,15,17,5,2,6,20,0,0
+12,Warriors,19,18,5,3,10,20,0,0
