@@ -1,29 +1,29 @@
-Creature,Lvl,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng
-Nothing,0,0,0,0,0,0
-Giant Cent,1,5,14,2,-1,6
-Giant Gecko,1,11,14,2,1,8
-Giant Spider,1,16,14,2,0,6
-Giant Weasel,1,9,15,5,3,6
-Tribesmen,1,10,15,2,1,6
-Venomous Snake,1,13,14,2,-1,4
-Boar,2,18,14,4,4,8
-Constrictor,2,19,15,5,4,4
-Giant Porcupine,2,22,13,5,3,12
-Gorilla,2,19,14,3,2,6
-Leopard,2,19,15,6,3,6
-Yw Musk Creep,2,22,14,5,4,4
-Dire Stag,3,42,17,7,5,8
-Dire Wolf,3,37,14,7,6,8
-Giant Skunk,3,27,15,5,3,8
-Jaguar,3,26,15,7,4,4
-Giant Chameleon,3,30,14,5,4,8
-Slitherrat,3,25,14,6,1,6
-Dire Boar,4,42,15,8,9,12
-Dire Wolverine,4,42,16,6,4,8
-Ven Snake Swarm,4,37,17,0,0,6
-Giant Vulture,4,42,17,9,9,12
-Giant Frilled Lizard,5,59,18,9,5,12
-Giant Forest Lizard,5,68,19,12,9,12
-Dire Rat Megaswarm,5,52,14,0,0,12
-Shambling Mound,5,67,19,11,5,12
-Scythe Tree,5,67,19,10,6,8
+Creature,Lvl,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crt Rng
+Nothing,0,0,0,0,0,0,20
+Giant Cent,1,5,14,2,-1,6,20
+Giant Gecko,1,11,14,2,1,8,20
+Giant Spider,1,16,14,2,0,6,20
+Giant Weasel,1,9,15,5,3,6,20
+Tribesmen,1,10,15,2,1,6,20
+Venomous Snake,1,13,14,2,-1,4,20
+Boar,2,18,14,4,4,8,20
+Constrictor,2,19,15,5,4,4,20
+Giant Porcupine,2,22,13,5,3,12,20
+Gorilla,2,19,14,3,2,6,20
+Leopard,2,19,15,6,3,6,20
+Yw Musk Creep,2,22,14,5,4,4,20
+Dire Stag,3,42,17,7,5,8,20
+Dire Wolf,3,37,14,7,6,8,20
+Giant Skunk,3,27,15,5,3,8,20
+Jaguar,3,26,15,7,4,4,20
+Giant Chameleon,3,30,14,5,4,8,20
+Slitherrat,3,25,14,6,1,6,20
+Dire Boar,4,42,15,8,9,12,20
+Dire Wolverine,4,42,16,6,4,8,20
+Ven Snake Swarm,4,37,17,0,0,6,20
+Giant Vulture,4,42,17,9,9,12,20
+Giant Frilled Lizard,5,59,18,9,5,12,20
+Giant Forest Lizard,5,68,19,12,9,12,20
+Dire Rat Megaswarm,5,52,14,0,0,12,20
+Shambling Mound,5,67,19,11,5,12,20
+Scythe Tree,5,67,19,10,6,8,20
