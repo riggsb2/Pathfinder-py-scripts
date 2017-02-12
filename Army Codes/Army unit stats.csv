@@ -1,4 +1,5 @@
 Type,Level,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit
-ELevel1,1,11,13,5,1,6,20
-ELevel2,2,25,13,6,6,10,20
+Sold1,1,11,13,5,1,6,20
+Sold2,2,25,13,6,6,10,20
+Druid1,1,8,13,3,2,6,20
 Zer'ek,6,24,19,4,3,8,20
