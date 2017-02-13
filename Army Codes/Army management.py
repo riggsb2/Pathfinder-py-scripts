@@ -12,7 +12,19 @@ import math as m
 import Battlecode as b
 
 def Reclaim_land():
-    print('Bring nature back to the world')
+    print('******* Bring nature back to the world **************')
+    area_left = int(city[4])
+    dev= int(city[2])
+    time = m.ceil((area_left*dev)/(druid_power*2400))
+    print('Reclaimation should take ',time, 'days')
+    for i in range(time):
+        area_reclaimed = (druid_power*2400)/dev
+        XP = area_reclaimed/100
+        gain_xp(XP,'d')
+        area_left -= area_reclaimed
+        time = m.ceil((area_left*dev)/(druid_power*2400))
+        total_time = i+1
+    print(city[1],' has been reclaimed. It took ',total_time,' days')
     return()
     
 def Attack_city():
@@ -156,7 +168,7 @@ def Attack_city():
                 known_city[6] = 0
                 known_city[8] = 0
                 known_city[9] = 0
-                                                           
+                Reclaim_land()
             break
         elif confirm == 'n':
             print('Look again at the cities')
@@ -323,7 +335,8 @@ def View_cities():
     
 def Import_armyfile(armyfile):
     global soldiers_available 
-    global druids_available    
+    global druids_available 
+    global druid_power
     global Army
     
     soldiers_available  = 0
@@ -391,7 +404,7 @@ def gain_xp(exp,unit):
         for i in range(1,len(Army)):
             if Army[i][1] == 'Sold1' or Army[i][1] == 'Sold2' or Army[i][1] == 'Sold3' or Army[i][1] == 'Sold4':
                 unit_cnt += int(Army[i][0])
-        unit_exp = exp/unit_cnt
+        unit_exp = int(exp/unit_cnt)
         for i in range(1,len(Army)):
             if Army[i][1] == 'Sold1' or Army[i][1] == 'Sold2' or Army[i][1] == 'Sold3' or Army[i][1] == 'Sold4':
                 Army[i][8] = int(Army[i][8])+unit_exp
@@ -399,7 +412,7 @@ def gain_xp(exp,unit):
         for i in range(1,len(Army)):
             if Army[i][1] == 'Druid1' or Army[i][1] == 'Druid2' or Army[i][1] == 'Druid3' or Army[i][1] == 'Druid4':
                 unit_cnt += int(Army[i][0])
-        unit_exp = exp/unit_cnt
+        unit_exp = int(exp/unit_cnt)
         for i in range(1,len(Army)):
             if Army[i][1] == 'Druid1' or Army[i][1] == 'Druid2' or Army[i][1] == 'Druid3' or Army[i][1] == 'Druid4':
                 Army[i][8] = int(Army[i][8])+unit_exp
@@ -425,7 +438,7 @@ def load_game():
     global Army_units
     global Known_cities
     global gamestate
-    
+    global exp_list
     game = 0
     city_units = np.genfromtxt('City unit stats.csv', dtype = str, delimiter = ',')
     Army_units = np.genfromtxt('Army unit stats.csv', dtype = str, delimiter = ',')
@@ -447,7 +460,7 @@ def load_game():
                 game = 1
             except:
                 print('Cannot find file')
-                
+    exp_list = [0,1300,3300,6000,10000,23000]          
     return()       
 #Reference materials
 
