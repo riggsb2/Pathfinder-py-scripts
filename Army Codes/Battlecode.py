@@ -149,6 +149,8 @@ def battle(armyfile,enemyfile,simulations):
         #Battlefield[0:len(Enemy_army),1] = Enemy_army[:]
         rnd=1  
         #Run the battle. As long as one army doesn't overwhelm the other (5x size), continue fighting
+        Ally_deadlist = []
+        Enemy_deadlist = []
         while len(Ally_army)<5*len(Enemy_army) and len(Enemy_army)<5*len(Ally_army):
         #while len(Ally_army)>0 and len(Enemy_army)>0: #TO THE DEATH
             rnd_length=(len(Battlefield))
@@ -228,17 +230,13 @@ def battle(armyfile,enemyfile,simulations):
                 for Slot in range(len(Battlefield[rnd_count])):
                     if Battlefield[rnd_count][Slot][1] <='0':
                         if Battlefield[rnd_count][Slot][9] =='A':
-                            for z in range(1,len(Ally_stats)):
-                                if Battlefield[rnd_count][Slot][0] == Ally_stats[z][1]:
-                                    Ally_stats[z][0]=int(Ally_stats[z][0])-1
+                            Ally_deadlist.append(Battlefield[rnd_count][Slot][0])
                             try: 
                                 del Ally_army[-1]
                             except:
                                 break
                         elif Battlefield[rnd_count][Slot][9] =='E':
-                            for z in range(1,len(Enemy_stats)):
-                                if Battlefield[rnd_count][Slot][0] == Enemy_stats[z][1]:
-                                    Enemy_stats[z][0]=int(Enemy_stats[z][0])-1
+                            Enemy_deadlist.append(Battlefield[rnd_count][Slot][0])
                             try: 
                                 del Enemy_army[-1]
                             except:
@@ -267,16 +265,14 @@ def battle(armyfile,enemyfile,simulations):
         Enemy_survlst.append(Enemy_surv)
     
     print("Battles Complete")
-    np.savetxt(armyfile,Ally_stats,fmt='%.20s',delimiter = ',')
-    np.savetxt(enemyfile,Enemy_stats,fmt='%.20s',delimiter = ',')
     Ally_avg = int(sum(Ally_survlst)/len(Ally_survlst))
     Enemy_avg= int(sum(Enemy_survlst)/len(Enemy_survlst))
     
 
         
     WinRatio = round((Awin/simulations)*100)    
-    return(WinRatio, Ally_avg, Enemy_avg)
+    return(WinRatio, Ally_avg, Enemy_avg, Ally_deadlist, Enemy_deadlist)
 
 
-#print('Allies win: ', battle('Ally army.csv','Enemy army.csv',1)[0],'%')  
+#print('Allies win: ', battle('Ally.csv','Enemy.csv',1),'%')  
 

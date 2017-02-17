@@ -99,6 +99,7 @@ def Attack_city():
                 Import_armyfile(os.path.join(gamestate,'Enemy army.csv'))
                 View_army()
                 gain_xp(total_exp,'s')
+                
                 #Conversion of the populace
                 
                 print('\n Let the conversion of ',city[1],' begin\n')
@@ -177,7 +178,12 @@ def Attack_city():
 
     #Print out city list    
     return()
-    
+def update_army(deadlist):
+    for i in range(len(deadlist)):
+        for j in range(1,len(roster)):
+            if deadlist[i]==roster[j][0]:
+                roster = np.delete(roster,j,axis=0)
+    return()
 def Scout():
     print('****************Scouting*******************')
     selection = 1000    
@@ -310,7 +316,12 @@ def Gain_support():
                 except:
                     print()
                     
-                Army[1][0] = int(Army[1][0])-soldiers_killed               
+                for i in range(soldiers_killed):
+                    for j in range(1,len(roster)):
+                        if roster[j][0]=='Sold1':
+                            roster = np.delete(roster,j,axis = 0)
+                            break
+                #Army[1][0] = int(Army[1][0])-soldiers_killed               
                 print('Your druids have retuned after ', days,' days.')
                 print('You have gained ', total_added,' sympathizers in ', city[1])
                 print()
@@ -324,7 +335,7 @@ def Gain_support():
     
 def View_army():
     print("Here's the troop breakdown\n")
-    print(Army,'\n')
+    print(army_summary,'\n')
     return()
 
 def View_cities():
@@ -337,26 +348,50 @@ def Import_armyfile(armyfile):
     global soldiers_available 
     global druids_available 
     global druid_power
-    global Army
+    #global Army
+    global roster
+    global army_summary
     
     soldiers_available  = 0
     druids_available =0
     druid_power = 0
-    Army = np.genfromtxt(armyfile, dtype = str, delimiter = ',')
-    for i in range(len(Army)):
-        if Army[i][1] == 'Sold1' or Army[i][1] == 'Sold2' or Army[i][1] == 'Sold3' or Army[i][1] == 'Sold4':
-            soldiers_available = int(Army[i][0])
-        if Army[i][1] == 'Druid1' or Army[i][1] == 'Druid2' or Army[i][1] == 'Druid3' or Army[i][1] == 'Druid4':
-            druids_available = int(Army[i][0])
+    #Army = np.genfromtxt(armyfile, dtype = str, delimiter = ',')
+    
+    #imports full roster of army
+    roster = np.genfromtxt('Full Roster.csv',dtype = str, delimiter = ",")
+    #add sort function to roster?
+    
+    #imports army stats
+    army_stats = np.genfromtxt('Enemy unit stats.csv',dtype = str, delimiter = ",")   
+    
+    #assembles army summary
+    army_summary = np.array(['Number','Type','HP','AC','Hit B.', 'Dmg.B', 'Dmg.Rng.','Crit'])
+    summary ={}
+    unique, counts = np.unique(roster[1:,0], return_counts = True)
+    result = dict(zip(unique,counts))
+    summary = np.array([(key,val) for (key,val) in result.items()],dtype=str)
+    
+    for i in range(1,len(army_stats)):
+        for j in range(len(summary)):               
+            if summary[j][0] == army_stats[i][0]:
+                temp = [summary[j][1]]
+                temp = np.hstack((temp,army_stats[i]))
+                army_summary = np.vstack((army_summary,temp))
+                
+    for i in range(len(summary)):
+        if summary[i][1] == 'Sold1' or summary[i][1] == 'Sold2' or [i][1] == 'Sold3' or summary[i][1] == 'Sold4':
+            soldiers_available = int(summary[i][0])
+        if summary[i][1] == 'Druid1' or summary[i][1] == 'Druid2' or summary[i][1] == 'Druid3' or summary[i][1] == 'Druid4':
+            druids_available = int(summary[i][0])
             for j in range(len(Army_units)):
                 if Army_units[j][0]=='Druid1':
-                    druid_power += (int(Army[i][0])*int(Army_units[j][1]))
+                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
                 if Army_units[j][0]=='Druid2':
-                    druid_power += (int(Army[i][0])*int(Army_units[j][1]))
+                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
                 if Army_units[j][0]=='Druid3':
-                    druid_power += (int(Army[i][0])*int(Army_units[j][1]))
+                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
                 if Army_units[j][0]=='Druid4':
-                    druid_power += (int(Army[i][0])*int(Army_units[j][1]))
+                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
     return()
     
 def Lookup_unit(unit, side, count):
