@@ -1,4 +1,4 @@
-Type,Level,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit
-Conscripts,1,9,14,4,1,6,20
-Guards,2,15,17,5,2,6,20
-Warriors,4,19,18,5,3,10,20
+Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit,Exp,Level
+Conscripts,9,14,4,1,6,20,0,1
+Guards,15,17,5,2,6,20,0,2
+Warriors,19,18,5,3,10,20,0,4

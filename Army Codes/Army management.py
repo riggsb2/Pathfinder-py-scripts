@@ -12,7 +12,7 @@ import math as m
 import Battlecode as b
 
 def Reclaim_land():
-    print('******* Bring nature back to the world **************')
+    print('\n******* Bring nature back to the world **************\n')
     area_left = int(city[4])
     dev= int(city[2])
     time = m.ceil((area_left*dev)/(druid_power*2400))
@@ -25,9 +25,11 @@ def Reclaim_land():
         time = m.ceil((area_left*dev)/(druid_power*2400))
         total_time = i+1
     print(city[1],' has been reclaimed. It took ',total_time,' days')
+    print()
     return()
     
 def Attack_city():
+    global roster
     print('**************** Preparing for Battle **********************')    
     selection = 10000
     while action !=0:
@@ -37,12 +39,15 @@ def Attack_city():
         if selection == 0:
             break
         Lookup_city(selection)
+        
         Army_stat = np.array(['Number',"Type",
                                   'HP','AC','Hit Bonus','Dmg Bonus',
                                   'Dmg rng','Crit','Exp','Pos'])
-        for i in range(1,len(Army)):
-            if Army[i][1] == 'Sold1' or Army[i][1] =='Sold2' or Army[i][1] =='Sold3' or Army[i][1] =='Sold4':
-                Army_stat = np.vstack((Army_stat,Army[i]))
+   
+        for i in range(1,len(army)):
+            if army[i][1] == 'Sold1' or army[i][1] =='Sold2' or army[i][1] =='Sold3' or army[i][1] =='Sold4':
+                Army_stat = np.vstack((Army_stat,army[i]))
+                
         print('Here are your attacking units\n',Army_stat)
         np.savetxt('Enemy.csv',Army_stat,fmt='%.20s',delimiter = ",")
         
@@ -67,46 +72,43 @@ def Attack_city():
             np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")  
             
             result = b.battle('Ally.csv','Enemy.csv',1)
+                        
+            #counts type of units killed from the city army
+            unique, counts = np.unique(result[3], return_counts = True)            
+            city_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
             
-            City_Army = np.genfromtxt('Ally.csv', dtype = str, delimiter = ",")
-            Army_stat = np.genfromtxt('Enemy.csv', dtype = str, delimiter = ",")
-            for i in range(1,len(Army)):
-                try:                
-                    if Army_stat[i][1]==Army[i][1]:
-                        Army[i] = Army_stat[i]
-                except:
-                    break
+            for i in range(len(city_killed)):
+                if city_killed[i][0] == 'Guards':
+                    city[5] = int(city[5])-1
+                    known_city[5] = city[6] #updates number of known guards in city
+                if city_killed[i][0] == 'Conscripts':
+                    city[6] = int(city[6])-1
+                    known_city[6] = city[6]
+                if city_killed[i][0] == 'Warriors':
+                    city[9] = int(city[9])-1
+                    known_city[9] = city[9]            
+                    
+            update_army(result[4])
+            View_army()
             
-            city[5] = City_Army[1][0] #updates number of guards in city
-            city[6] = City_Army[2][0] #updates number of conscripts in city
-            city[9] = City_Army[3][0] #updates number of warriors in city
-            known_city[5] = City_Army[1][0] #updates number of known guards in city
-            known_city[6] = City_Army[2][0] #updates number of known conscripts in city
-            known_city[9] = City_Army[3][0] #updates number of known warriors in city
             total_exp = 0
-            
             for i in range(1,len(Encounter_stat)):
                 total_exp += int(Encounter_stat[i][8])
-           
+            
+            gain_xp(total_exp,'s')
+
             if result[0]==1:
                 print('Your army has been DEFEATED. You have fallen back to the last city')
-                Import_armyfile('Enemy army.csv')
-                View_army()
-                gain_xp(total_exp,'s')
-                
+               
             elif result[0]==0:
                 print('Your army has been Victorious. You have taken ', city[1])
-                Import_armyfile(os.path.join(gamestate,'Enemy army.csv'))
-                View_army()
-                gain_xp(total_exp,'s')
                 
-                #Conversion of the populace
-                
+                #Conversion of the populace                
                 print('\n Let the conversion of ',city[1],' begin\n')
                 symp_conv = int(city[8])
                 print(symp_conv,' sympathizers have joined your army as level 1 soliders.')                
                 for i in range(3):
-                    print('You have ' , druids_available,',druids available')
+                    print('You have ' , druids_available,' druids available')
                     print('There are:\n')
                     print(city[10],' commoners')
                     print(city[7],' scholars')
@@ -135,18 +137,18 @@ def Attack_city():
                             break
                         else:
                             print('That is not an acceptable answer')
-                    #updates army numbers
-                    for j in range(1,len(Army)):
-                        if Army[j][1] == 'Sold1':
-                            Army[j][0] = int(Army[j][0])+symp_conv+commoner_conv+conscript_conv
-                            symp_conv = 0
-                        elif Army[j][1] == 'Sold2':
-                            Army[j][0] = int(Army[j][0])+guard_conv
-                        elif Army[j][1] == 'Sold3':
-                            Army[j][0] = int(Army[j][0])+warrior_conv
-                        elif Army[j][1] == 'Druid1':
-                            Army[j][0] = int(Army[j][0])+scholar_conv
-                            
+
+                    sold_conv = symp_conv + conscript_conv + commoner_conv
+                    for j in range(sold_conv):
+                        roster = np.vstack((roster,['Sold1',0,1300,1]))
+                    for j in range(guard_conv):
+                        roster = np.vstack((roster,['Sold2',0,3300,2]))                        
+                    for j in range(warrior_conv):
+                        roster = np.vstack((roster,['Sold3',0,6000,3]))
+                    for j in range(scholar_conv):
+                        roster = np.vstack((roster,['Druid1',0,1300,1]))
+                    symp_conv = 0
+                    update_army([])
                     #update city numbers
                     city[10] = int(city[10])-commoner_conv
                     city[7] = int(city[7]) - scholar_conv
@@ -169,6 +171,9 @@ def Attack_city():
                 known_city[6] = 0
                 known_city[8] = 0
                 known_city[9] = 0
+                known_city[2] = city[2]
+                known_city[3] = city[3]
+                known_city[4] = city[4]
                 Reclaim_land()
             break
         elif confirm == 'n':
@@ -178,12 +183,7 @@ def Attack_city():
 
     #Print out city list    
     return()
-def update_army(deadlist):
-    for i in range(len(deadlist)):
-        for j in range(1,len(roster)):
-            if deadlist[i]==roster[j][0]:
-                roster = np.delete(roster,j,axis=0)
-    return()
+
 def Scout():
     print('****************Scouting*******************')
     selection = 1000    
@@ -229,6 +229,7 @@ def Gain_support():
     selection = 1000    
     druids =1000
     soldiers = 1000
+    time = 0
     while selection != 0:
         View_cities()
         selection = int(input('Which city would you like to gain support for? 0 to exit.'))    
@@ -244,7 +245,9 @@ def Gain_support():
                 soldiers = int(input('How many soldiers will you send to protect your druids? '))
                 if soldiers > soldiers_available:
                     print('You only have ', soldiers_available, 'available. Try again.')
-            time = int(input('How long should they stay in the city? '))
+            while time <=0:
+                time = int(input('How long should they stay in the city? '))
+                
             print(druids,' driuds and ', soldiers, ' soldiers are off for ',time, 'days to add to your flock.')
             confirm = str.lower(input('Are you sure? (y/n) '))
             if confirm == 'y':
@@ -265,7 +268,7 @@ def Gain_support():
                         attackers = m.ceil(Guards/area)
                         Encounter_stat = np.array(['Number',"Type",
                                        'HP','AC','Hit Bonus','Dmg Bonus',
-                                       'Dmg rng','Crit','Exp','Pos'])
+                                       'Dmg rng','Crit','Exp','Level'])
                         unit_stat = Lookup_unit('Guards','City',attackers)
                         Encounter_stat = np.vstack((Encounter_stat,unit_stat)) 
                         np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")
@@ -273,8 +276,8 @@ def Gain_support():
                         #Sets up soldier and druid stat blocks
                         Encounter_stat = np.array(['Number',"Type",
                                        'HP','AC','Hit Bonus','Dmg Bonus',
-                                       'Dmg rng','Crit','Exp','Pos'])
-                        unit_stat = Lookup_unit('ELevel1','Enemy',soldiers)
+                                       'Dmg rng','Crit','Exp','Level'])
+                        unit_stat = Lookup_unit('Sold1','Enemy',soldiers)
                         Encounter_stat = np.vstack((Encounter_stat,unit_stat))
                         unit_stat = Lookup_unit('Druid1','Enemy',druids)
                         Encounter_stat = np.vstack((Encounter_stat,unit_stat))
@@ -289,6 +292,8 @@ def Gain_support():
                         soldiers -= s_kill
                         Guards_killed += g_kill
                         soldiers_killed += s_kill
+                        update_army(result[4])
+
                     else:
                         print('Day ',(days+1),': Preaching in the city')
                         convert_chk = 0
@@ -315,13 +320,8 @@ def Gain_support():
                     known_city[10] = int(known_city[10])-total_added
                 except:
                     print()
-                    
-                for i in range(soldiers_killed):
-                    for j in range(1,len(roster)):
-                        if roster[j][0]=='Sold1':
-                            roster = np.delete(roster,j,axis = 0)
-                            break
-                #Army[1][0] = int(Army[1][0])-soldiers_killed               
+                
+    
                 print('Your druids have retuned after ', days,' days.')
                 print('You have gained ', total_added,' sympathizers in ', city[1])
                 print()
@@ -333,67 +333,48 @@ def Gain_support():
                   
     return()
     
-def View_army():
-    print("Here's the troop breakdown\n")
-    print(army_summary,'\n')
-    return()
-
-def View_cities():
-    global Known_cities
-    print("Here's what you know about the cities\n")
-    print(Known_cities,'\n') 
-    return()
-    
-def Import_armyfile(armyfile):
-    global soldiers_available 
-    global druids_available 
-    global druid_power
-    #global Army
+def update_army(deadlist):
     global roster
-    global army_summary
+    global druid_power
+    global druids_available
+    global soldiers_available
+    global army
     
-    soldiers_available  = 0
-    druids_available =0
-    druid_power = 0
-    #Army = np.genfromtxt(armyfile, dtype = str, delimiter = ',')
-    
-    #imports full roster of army
-    roster = np.genfromtxt('Full Roster.csv',dtype = str, delimiter = ",")
-    #add sort function to roster?
-    
-    #imports army stats
-    army_stats = np.genfromtxt('Enemy unit stats.csv',dtype = str, delimiter = ",")   
-    
-    #assembles army summary
-    army_summary = np.array(['Number','Type','HP','AC','Hit B.', 'Dmg.B', 'Dmg.Rng.','Crit'])
-    summary ={}
+    for i in range(len(deadlist)):
+       for j in range(1,len(roster)):
+           if deadlist[i]==roster[j][0]:
+               roster = np.delete(roster,j,axis=0)
+               break
+           
+    #Counts instances of each type of unit in the roster, reports as array
     unique, counts = np.unique(roster[1:,0], return_counts = True)
     result = dict(zip(unique,counts))
-    summary = np.array([(key,val) for (key,val) in result.items()],dtype=str)
-    
-    for i in range(1,len(army_stats)):
+    summary = np.array([(key,val) for (key,val) in result.items()],dtype=str)    
+
+    #forms the summary array for viewing
+    army = np.array(['Number','Type','HP','AC','Hit B.', 'Dmg.B', 'Dmg.Rng.','Crit','Exp','lvl'])
+
+    for i in range(1,len(Army_units)):
         for j in range(len(summary)):               
-            if summary[j][0] == army_stats[i][0]:
+            if summary[j][0] == Army_units[i][0]:
                 temp = [summary[j][1]]
-                temp = np.hstack((temp,army_stats[i]))
-                army_summary = np.vstack((army_summary,temp))
-                
-    for i in range(len(summary)):
-        if summary[i][1] == 'Sold1' or summary[i][1] == 'Sold2' or [i][1] == 'Sold3' or summary[i][1] == 'Sold4':
-            soldiers_available = int(summary[i][0])
-        if summary[i][1] == 'Druid1' or summary[i][1] == 'Druid2' or summary[i][1] == 'Druid3' or summary[i][1] == 'Druid4':
-            druids_available = int(summary[i][0])
-            for j in range(len(Army_units)):
-                if Army_units[j][0]=='Druid1':
-                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
-                if Army_units[j][0]=='Druid2':
-                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
-                if Army_units[j][0]=='Druid3':
-                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
-                if Army_units[j][0]=='Druid4':
-                    druid_power += (int(summary[i][0])*int(Army_units[j][1]))
-    return()
+                temp = np.hstack((temp,Army_units[i]))
+                army = np.vstack((army,temp))
     
+    #counts soldiers and druids available
+    soldiers_available  = 0
+    druids_available = 0
+    druid_power = 0
+    
+    for i in range(len(army)):
+        if army[i][1]== 'Sold1' or army[i][1] == 'Sold2' or army[i][1] == 'Sold3' or army[i][1] == 'Sold4':
+            soldiers_available += int(army[i][0])
+        if army[i][1] == 'Druid1' or army[i][1] == 'Druid2' or army[i][1] == 'Druid3' or army[i][1] == 'Druid4':
+            druids_available += int(army[i][0])
+            druid_power += int(army[i][9])*int(army[i][0])
+            
+    return()
+       
 def Lookup_unit(unit, side, count):
     if side == 'Enemy':
         Table = Army_units
@@ -403,25 +384,51 @@ def Lookup_unit(unit, side, count):
     for j in range(len(Table)):    
         if Table[j][0] == unit:
             found = 1
-            unit_lvl = int(Table[j,1])
+            unit_lvl = int(Table[j,8])
             unit_exp = int(290.95*m.e**(0.3466*(unit_lvl)))
-            HP = int(Table[j][2])
-            AC = int(Table[j][3])
-            HitBonus = int(Table[j][4])
-            DmgBonus = int(Table[j][5])
-            DmgRng = int(Table[j][6])
-            Crit = int(Table[j][7])
+            HP = int(Table[j][1])
+            AC = int(Table[j][2])
+            HitBonus = int(Table[j][3])
+            DmgBonus = int(Table[j][4])
+            DmgRng = int(Table[j][5])
+            Crit = int(Table[j][6])
                     
             Exp = int(count*unit_exp)
 
             unit_stat = np.array([count,unit,
                             HP,AC,HitBonus,DmgBonus,DmgRng,
-                            Crit,Exp,0])
+                            Crit,Exp,unit_lvl])
     if found == 1:
         return(unit_stat)  
     else:
         print('Cannot find a unit by that name')
         return()
+    
+def gain_xp(exp,unit):
+    if unit == 's':
+        unit_exp = int(exp/soldiers_available)
+        for i in range(1,len(roster)):
+            if roster[i][0] == 'Sold1' or roster[i][0] == 'Sold2' or roster[i][0] == 'Sold3' or roster[i][0] == 'Sold4':
+                roster[i][1]=int(roster[i][1])+unit_exp #add experience to each unit
+                if int(roster[i][1])>=int(roster[i][2]): #level up
+                    lvl = int(roster[i][3])+1                    
+                    roster[i][3] = lvl
+                    roster[i][2] = 350*(lvl+1)**2 + 250*(lvl+1) - 600
+                    roster[i][0] = "Sold"+str(lvl)
+    elif unit == 'd':
+        unit_exp = int(exp/druids_available)
+        for i in range(1,len(roster)):
+            if roster[i][0] == 'Druid1' or roster[i][0] == 'Druid2' or roster[i][0] == 'Druid3' or roster[i][0] == 'Druid4':
+                roster[i][1]=int(roster[i][1])+unit_exp #add experience to each unit
+                if int(roster[i][1])>=int(roster[i][2]): #level up
+                    lvl = int(roster[i][3])+1                    
+                    roster[i][3] = lvl
+                    roster[i][2] = 350*(lvl+1)**2 + 250*(lvl+1) - 600
+                    roster[i][0] = "Sold"+str(lvl)
+    else:
+        print('No units of that type')
+    
+    return()
 
 def Lookup_city(selection):
     global known_city
@@ -431,29 +438,18 @@ def Lookup_city(selection):
             known_city = Known_cities[i]
             print(known_city)
         if selection == int(Cities[i][0]):
-            city = Cities[i]
+            city = Cities[i]  
+    return()
     
-def gain_xp(exp,unit):
-    unit_cnt = 0
-    if unit == 's':
-        for i in range(1,len(Army)):
-            if Army[i][1] == 'Sold1' or Army[i][1] == 'Sold2' or Army[i][1] == 'Sold3' or Army[i][1] == 'Sold4':
-                unit_cnt += int(Army[i][0])
-        unit_exp = int(exp/unit_cnt)
-        for i in range(1,len(Army)):
-            if Army[i][1] == 'Sold1' or Army[i][1] == 'Sold2' or Army[i][1] == 'Sold3' or Army[i][1] == 'Sold4':
-                Army[i][8] = int(Army[i][8])+unit_exp
-    elif unit == 'd':
-        for i in range(1,len(Army)):
-            if Army[i][1] == 'Druid1' or Army[i][1] == 'Druid2' or Army[i][1] == 'Druid3' or Army[i][1] == 'Druid4':
-                unit_cnt += int(Army[i][0])
-        unit_exp = int(exp/unit_cnt)
-        for i in range(1,len(Army)):
-            if Army[i][1] == 'Druid1' or Army[i][1] == 'Druid2' or Army[i][1] == 'Druid3' or Army[i][1] == 'Druid4':
-                Army[i][8] = int(Army[i][8])+unit_exp
-    else:
-        print('No units of that type')
-    
+def View_army():
+    print("Here's the troop breakdown\n")
+    print(army,'\n')
+    return()
+
+def View_cities():
+    global Known_cities
+    print("Here's what you know about the cities\n")
+    print(Known_cities,'\n') 
     return()
     
 def Save_game():
@@ -463,7 +459,7 @@ def Save_game():
     if not os.path.isdir(gamestate):    
         os.makedirs(gamestate)
     np.savetxt(os.path.join(gamestate,'City list.csv'), Cities, fmt='%.20s', delimiter = ',')
-    np.savetxt(os.path.join(gamestate,'Enemy Army.csv'), Army, fmt='%.20s', delimiter = ',')
+    np.savetxt(os.path.join(gamestate,'Full Roster.csv'), roster, fmt='%.20s', delimiter = ',')
     np.savetxt(os.path.join(gamestate,'Known Cities.csv'),Known_cities,  fmt='%.20s',  delimiter = ',')
     
 def load_game():
@@ -474,6 +470,7 @@ def load_game():
     global Known_cities
     global gamestate
     global exp_list
+    global roster
     game = 0
     city_units = np.genfromtxt('City unit stats.csv', dtype = str, delimiter = ',')
     Army_units = np.genfromtxt('Army unit stats.csv', dtype = str, delimiter = ',')
@@ -483,14 +480,16 @@ def load_game():
         gamestate = str.lower(input('Load game as (0 for new game):'))
         if gamestate == '0':
             Cities = np.genfromtxt(os.path.join('newgame','City list.csv'), dtype = str, delimiter = ',')
-            Import_armyfile(os.path.join('newgame','Enemy army.csv'))                          
+            roster = np.genfromtxt(os.path.join('newgame','Full roster.csv'),dtype = str, delimiter = ",")
+            update_army([])
             Known_cities = np.genfromtxt(os.path.join('newgame','Known Cities.csv'), dtype = str, delimiter = ',')  
             Save_game()
             game = 1
         else:
             try:
                 Cities = np.genfromtxt(os.path.join(gamestate,'City list.csv'), dtype = str, delimiter = ',')
-                Import_armyfile(os.path.join(gamestate,'Enemy army.csv'))                         
+                roster = np.genfromtxt(os.path.join(gamestate,'Full roster.csv'),dtype = str, delimiter = ",")
+                update_army([])
                 Known_cities = np.genfromtxt(os.path.join(gamestate,'Known Cities.csv'), dtype = str, delimiter = ',')  
                 game = 1
             except:

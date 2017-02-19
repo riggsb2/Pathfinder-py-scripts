@@ -1,5 +1,10 @@
-Type,Level,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit
-Sold1,1,11,13,5,1,6,20
-Sold2,2,25,13,6,6,10,20
-Druid1,1,8,13,3,2,6,20
-Zer'ek,6,24,19,4,3,8,20
+Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit,Exp,Level
+Sold1,11,13,5,1,6,20,0,1
+Sold2,25,13,6,6,10,20,1300,2
+Sold3,33,15,7,8,10,20,3300,3
+Sold4,40,17,8,10,10,20,6000,4
+Druid1,8,13,3,2,6,20,0,1
+Druid2,16,13,6,4,6,20,1300,2
+Druid3,24,13,9,6,6,20,3300,3
+Druid4,32,13,12,8,6,20,6000,4
+Zer'ek,24,19,4,3,8,20,5000,6
