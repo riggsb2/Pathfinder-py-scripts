@@ -1,4 +1,2 @@
-Location ID,Name,Development,Security lvl,Area,Guards,Conscripts,Scholars,Sympathizers,Warriors,Commoners
-1,Alta Floresta,,,,,,,,,
-2,Apui,,,,,,,,,
-3,Aldeia,,,,,,,,,
+Location ID,Name,Development,Security lvl,Area,Guards,Conscripts,Scholars,Sympathizers,Warriors,Commoners,Distance
+1,Alta Floresta,,,,,,,,,,X

@@ -10,6 +10,7 @@ import os
 import random as r
 import math as m
 import Battlecode as b
+import Map
 
 def Reclaim_land():
     print('\n******* Bring nature back to the world **************\n')
@@ -185,6 +186,7 @@ def Attack_city():
     return()
 
 def Scout():
+    global Known_cities
     print('****************Scouting*******************')
     selection = 1000    
     while selection != 0:
@@ -210,12 +212,26 @@ def Scout():
                                int(r.uniform(randmin,randmax)*int(city[7])),
                                int(r.uniform(randmin,randmax)*int(city[8])),
                                int(r.uniform(randmin,randmax)*int(city[9])),
-                               int(r.uniform(randmin,randmax)*int(city[10]))]
+                               int(r.uniform(randmin,randmax)*int(city[10])),
+                                0]
                 print('Your scouts returned. Here is what they found')
                 print(gained_intel)
+                print()
                 for i in range(1,len(Known_cities)):
                     if int(gained_intel[0])==int(Known_cities[i][0]):
                         Known_cities[i] = gained_intel
+                
+                for i in range(1,3):   
+                    if Cities[selection+i][0] not in Known_cities[:,0]:
+                        print('You have learned of a new city!',Cities[selection+i][1],'\n')
+                        start = [city_loc[selection][1],city_loc[selection][2]] #update
+                        end = [city_loc[selection+1][1],city_loc[selection+1][2]]
+                        distance = Map.Travel_route(start, end)
+                        new_city = [Cities[selection+i][0],Cities[selection+i][1],
+                                     '','','','','','','','','',distance]
+                        Known_cities = np.vstack((Known_cities,new_city))
+                        
+                View_cities()
                 break
             elif confirm == 'n':
                 print('Look again at the cities')
@@ -471,11 +487,13 @@ def load_game():
     global gamestate
     global exp_list
     global roster
+    global city_loc
+    global current_loc
+    
     game = 0
     city_units = np.genfromtxt('City unit stats.csv', dtype = str, delimiter = ',')
     Army_units = np.genfromtxt('Army unit stats.csv', dtype = str, delimiter = ',')
-    
-    
+    city_loc = np.genfromtxt('City locations.csv',dtype = int, delimiter = ",")
     while game ==0:    
         gamestate = str.lower(input('Load game as (0 for new game):'))
         if gamestate == '0':
@@ -494,7 +512,9 @@ def load_game():
                 game = 1
             except:
                 print('Cannot find file')
-    exp_list = [0,1300,3300,6000,10000,23000]          
+    exp_list = [0,1300,3300,6000,10000,23000]    
+    current_loc = np.argwhere(Known_cities == 'X')[0][0]
+  
     return()       
 #Reference materials
 

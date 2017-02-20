@@ -18,13 +18,13 @@ def Find_adjacent(location):
                         [location[0]+1,location[1]+0]])
     return(adjacent)                   
 
-def Travel_route(endpoint):
+def Travel_route(startpoint, endpoint):
     global Map
     global Army_location
     
-    Map[endpoint[0],endpoint[1]] = '*'
-    show_map()
-    Travel_location = Army_location
+    #Map[endpoint[0],endpoint[1]] = '*'
+    #show_map()
+    Travel_location = startpoint
     time = 0
     while ((Travel_location[0] != endpoint[0]) or (Travel_location[1] != endpoint[1])):
         Next_hex = Find_adjacent(Travel_location)
@@ -44,7 +44,7 @@ def move():
     global Army_location
     
     Destination = [int(x) for x in input('Where would you like to move?').split()]
-    
+    print(Destination)
     print('Trip will take',Travel_route(Destination),'days')
     confirm = str.lower(input('Would you like to move there?'))
     
@@ -56,6 +56,7 @@ def move():
     return()    
     
 def show_map():
+    #edit to center around the army
     for i in range(len(Map)):
         if i%2==0:
             for j in range(len(Map[i])):
@@ -68,8 +69,8 @@ def show_map():
     print()  
   
 #Sets up map  
-Map= np.empty([10,10],dtype = str)
-Army_location = [5,4]
-Map[Army_location[0],Army_location[1]] = 'Z'
-show_map()
-move()
+Map= np.empty([80,80],dtype = str)
+#Army_location = [5,4]
+#Map[Army_location[0],Army_location[1]] = 'Z'
+#show_map()
+#move()

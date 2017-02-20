@@ -1,5 +1,5 @@
 Location ID,Name,Development,Security lvl,Area,Guards,Conscripts,Scholars,Sympathizers,Warriors,Commoners
-1,Alta Floresta,1,1,125000,0,0,0,0,0,0
+1,Alta Floresta,1,1,125000,1,6,1,18,1,98
 2,Apui,1,5,248107,15,4,1,16,2,68
 3,Aldeia,1,4,2336074,15,48,5,160,12,825
 4,Jardim,1,3,313645,3,5,1,20,2,104
