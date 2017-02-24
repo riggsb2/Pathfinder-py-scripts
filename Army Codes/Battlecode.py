@@ -44,16 +44,16 @@ def battle(armyfile,enemyfile,simulations):
             if i!=0 and j!=1:
                 Ally_stats[i][j]=int(Ally_stats[i][j])
             if j == 0: 
-                print( '{:<10}'.format(Ally_stats[i][j]), end=' ')
+                #print( '{:<10}'.format(Ally_stats[i][j]), end=' ')
                 units = Ally_stats[i][j] #sets number of units
             else:
-                print('{:<10}'.format(Ally_stats[i][j]),end = ' ')
+                #print('{:<10}'.format(Ally_stats[i][j]),end = ' ')
                 Ally.append(Ally_stats[i][j]) #assembles Alley stat block
         if i != 0:
             for k in range(int(units)):
                 Ally_army.append(copy.deepcopy(Ally))
-        print() 
-    print()
+        #print() 
+    #print()
     
     #Reads Enemy army from CSV file and prints on screen
     Enemy_stats = []
@@ -69,16 +69,16 @@ def battle(armyfile,enemyfile,simulations):
             if i!=0 and j!=1:
                 Enemy_stats[i][j]=int(Enemy_stats[i][j])
             if j == 0: 
-                print( '{:<10}'.format(Enemy_stats[i][j]), end=' ')
+                #print( '{:<10}'.format(Enemy_stats[i][j]), end=' ')
                 units = Enemy_stats[i][j] #sets number of units
             else:
-                print('{:<10}'.format(Enemy_stats[i][j]),end = ' ')
+                #print('{:<10}'.format(Enemy_stats[i][j]),end = ' ')
                 Enemy.append(Enemy_stats[i][j]) #assembles Alley stat block
         if i != 0:
             for k in range(int(units)):
                 Enemy_army.append(copy.deepcopy(Enemy))
-        print()
-    print()
+        #print()
+    #print()
     
     Ally_survlst =[]
     Enemy_survlst =[]
@@ -117,7 +117,6 @@ def battle(armyfile,enemyfile,simulations):
                 for k in range(int(units)):
                     Enemy_army.append(copy.deepcopy(Enemy))
         
-        #print("Armies Assigned")
         #Randomizes Unit Positions
         for i in range(1,len(Ally_army)):
             Pos1 = random.randint(0,len(Ally_army)-1)
@@ -128,7 +127,6 @@ def battle(armyfile,enemyfile,simulations):
             Pos1 = random.randint(0,len(Enemy_army)-1)
             Pos2 = random.randint(0,len(Enemy_army)-1)
             Enemy_army[Pos1], Enemy_army[Pos2] = Enemy_army[Pos2], Enemy_army[Pos1]
-        #print("Army randomized")
             
         #Issue with interpretation of values in 3D array        
         empty = ['','','','','','','','','','']
@@ -143,10 +141,6 @@ def battle(armyfile,enemyfile,simulations):
                 temp = [[Ally_army[i],empty,empty,empty]]
             Battlefield = np.vstack((Battlefield,temp))           
                     
-        #Battlefield = np.zeros([max(len(Ally_army),len(Enemy_army)),
-        #                       4, len(Ally)], dtype='a2')
-        #Battlefield[0:len(Ally_army),0] = Ally_army[:]        
-        #Battlefield[0:len(Enemy_army),1] = Enemy_army[:]
         rnd=1  
         #Run the battle. As long as one army doesn't overwhelm the other (5x size), continue fighting
         Ally_deadlist = []
@@ -161,7 +155,6 @@ def battle(armyfile,enemyfile,simulations):
                 #Check who is in what slot of a position
                 Ally_pos = []
                 Enemy_pos = []
-                #print(Battlefield[rnd_count])                   
                 for Slot in range(len(Battlefield[rnd_count])):
                     if Battlefield[rnd_count][Slot][9] =='A':
                         Ally_pos.append(Slot)
@@ -171,7 +164,6 @@ def battle(armyfile,enemyfile,simulations):
 
                 Ally_prevpos = []
                 Enemy_prevpos = []                    
-                #print(Battlefield[rnd_count-1])
                 for Slot in range(len(Battlefield[rnd_count-1])):
                     if Battlefield[rnd_count-1][Slot][9] =='A':
                         Ally_prevpos.append(Slot)
@@ -180,7 +172,6 @@ def battle(armyfile,enemyfile,simulations):
                 
                 Full = [0,1,2,3]              
                 openings = [x for x in Full if x not in (Ally_prevpos + Enemy_prevpos)]
-                #print('Slots open:', openings)
                 
                 for AT in range(len(Ally_pos)):
                     if Enemy_pos:   #Checks to see if there are enemies to fight                 
@@ -189,11 +180,9 @@ def battle(armyfile,enemyfile,simulations):
                                       int(Battlefield[rnd_count][Ally_pos[AT]][5]),#Dmg Range
                                       int(Battlefield[rnd_count][Ally_pos[AT]][6]),#Crit Range
                                       int(Battlefield[rnd_count][Enemy_pos[0]][2]))#Enemy AC
-                        #print(dmg)  
                         HP = int(Battlefield[rnd_count][Enemy_pos[0]][1])
                         HP -= dmg
                         Battlefield[rnd_count][Enemy_pos[0]][1] = HP
-                        #print(Battlefield[rnd_count][Enemy_pos[0]][1])
                     elif not Enemy_pos:
                         if rnd_count != 0:
                             if openings and len(Ally_prevpos)<3:
@@ -264,14 +253,14 @@ def battle(armyfile,enemyfile,simulations):
         Ally_survlst.append(Ally_surv)
         Enemy_survlst.append(Enemy_surv)
     
-    print("Battles Complete")
+    #print("Battles Complete")
     Ally_avg = int(sum(Ally_survlst)/len(Ally_survlst))
     Enemy_avg= int(sum(Enemy_survlst)/len(Enemy_survlst))
     
 
         
     WinRatio = round((Awin/simulations)*100)    
-    return(WinRatio, Ally_avg, Enemy_avg, Ally_deadlist, Enemy_deadlist)
+    return(WinRatio, Ally_avg, Enemy_avg, Ally_deadlist, Enemy_deadlist, rnd/10)
 
 
 #print('Allies win: ', battle('Ally.csv','Enemy.csv',1),'%')  
