@@ -1,6 +1,10 @@
 Location ID,Name,Development,Security lvl,Area,Guards,Conscripts,Scholars,Sympathizers,Warriors,Commoners,Distance
-1,Alta Floresta,1,1,125000,0,0,0,0,0,0,6
-2,Apui,1,1,248107,0,0,0,0,0,0,X
-3,Jardim,1,1,313645,3,3,0,15,2,95,3
-4,Chamleon,,,,,,,,,,3
-5,Biraba,,,,,,,,,,9
+1,Alta Floresta,1,1,125000,0,0,0,0,0,0,17
+2,Apui,1,1,248107,0,0,0,0,0,0,11
+3,Jardim,,,,,,,,,,8
+4,Chamleon,1,1,437699,0,0,0,0,0,0,10
+5,Biraba,1,1,229382,0,0,0,0,0,0,6
+6,Aldeia,,,,,,,,,,5
+7,Treviso,1,1,259810,0,0,0,0,0,0,X
+8,Guatuba,,,,,,,,,,14
+9,Morcego,,,,,,,,,,18
