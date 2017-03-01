@@ -42,6 +42,7 @@ def Attack_city():
     global current_loc
     global Known_cities
     global Cities
+    global attack_date
     
     print('**************** Preparing for Battle **********************')    
     selection = 10000
@@ -73,7 +74,8 @@ def Attack_city():
             temp = [calendar,'Army is moving to '+ city[1]]
             Journal = np.vstack((Journal,temp))
             calendar += travel_time
-            
+            attack_date = calendar
+
             #Creates the city army based on the City list data            
             guard_cnt = int(city[5])
             conscripts_cnt = int(city[6])
@@ -169,7 +171,7 @@ def Attack_city():
                             print(guard_conv,' guards to level 2 soldiers')
                             print(conscript_conv,' conscripts to level 1 soliders')
                             print(warrior_conv,' warriors to level 3 soldiers')
-                            print('\n You have ', (2-i), ' days left to convert the rest of the population')
+                            print('\n You have ', (2-i), ' tries left to convert the rest of the population')
                             gain_xp(total_conv*100,'d')
                         elif confirm == 'n':
                             break
@@ -180,7 +182,7 @@ def Attack_city():
                     sold_conv = symp_conv + conscript_conv + commoner_conv
 
                     for j in range(commoner_conv):
-                        if r.randint(1,100) <= 10:
+                        if r.randint(1,100) <= comm_druid:
                             druid_conv+=1
                             sold_conv -=1
                     for j in range(sold_conv):
@@ -230,8 +232,25 @@ def Attack_city():
                         end = [city_loc[selection+i][1],city_loc[selection+i][2]]
                         distance = Map.Travel_route(start, end)
                         new_city = [Cities[selection+i][0],Cities[selection+i][1],
-                                     '','','','','','','','','',distance]
+                                     Cities[selection+i][2],'',Cities[selection+i][4],
+                                     '','','','','','',distance]
                         Known_cities = np.vstack((Known_cities,new_city))
+            
+            #Update security level of city win or lose
+            for i in range(1,3):   
+                Cities[selection+i][3]=int(Cities[selection+i][3])+1 #update security lvl
+                sec_lvl = int(Cities[selection+i][3])
+                guards = int(Cities[selection+i][5])
+                conscript = int(Cities[selection+i][6])
+                warrior = int(Cities[selection+i][9])
+                commoners = int(Cities[selection+i][10])
+                
+                #updates disrtibution to account for growing concern
+                Cities[selection+i][10]= commoners - m.ceil(commoners*sec_lvl*0.03)
+                Cities[selection+i][6]= conscript + m.ceil(commoners*sec_lvl*0.03) - m.ceil(conscript*sec_lvl*0.02)
+                Cities[selection+i][5]= guards + m.ceil(conscript*sec_lvl*0.02) - m.ceil(guards*sec_lvl*0.01)
+                Cities[selection+i][9]= warrior + m.ceil(guards*sec_lvl*0.01)
+                
             break
         elif confirm == 'n':
             print('Look again at the cities')
@@ -280,6 +299,7 @@ def Scout():
                 calendar += travel_time
                 temp = np.array([calendar, 'Your scouts have returned'])
                 Journal = np.vstack((Journal,temp))
+                drop_security()
                                     
                 gained_intel =[city[0],city[1],city[2],city[3],city[4],
                                int(r.uniform(randmin,randmax)*int(city[5])),
@@ -289,8 +309,6 @@ def Scout():
                                int(r.uniform(randmin,randmax)*int(city[9])),
                                int(r.uniform(randmin,randmax)*int(city[10])),
                                 0]
-                print('Your scouts returned. Here is what they found')
-                print(gained_intel)
                 print()
                 for i in range(1,len(Known_cities)):
                     if int(gained_intel[0])==int(Known_cities[i][0]):
@@ -303,7 +321,8 @@ def Scout():
                         end = [city_loc[selection+i][1],city_loc[selection+i][2]]
                         distance = Map.Travel_route(start, end)
                         new_city = [Cities[selection+i][0],Cities[selection+i][1],
-                                     '','','','','','','','','',distance]
+                                     Cities[selection+i][2],'',Cities[selection+i][4],
+                                     '','','','','','',distance]
                         Known_cities = np.vstack((Known_cities,new_city))
                 for i in range(time):
                     gain_xp(soldiers_available*idle_exp,'s')
@@ -399,7 +418,7 @@ def Gain_support():
                         #print('Day ',(days+1),': Preaching in the city')
                         convert_chk = 0
                         for i in range(druids):                  
-                            convert_chk = r.randint(1,5)/100
+                            convert_chk = r.unifrom(0,3)/100
                             convert_chk +=convert_chk
                         added_symp = m.ceil(convert_chk*Commoner)
                         Symp += added_symp
@@ -425,6 +444,7 @@ def Gain_support():
                 calendar += travel_time
                 temp = np.array([calendar, 'Your scouts have returned'])
                 Journal = np.vstack((Journal,temp))
+                drop_security()
                 try: #in case the place they know nothing
                     known_city[5] = int(known_city[5])-Guards_killed
                     known_city[8] = int(known_city[8])+total_added
@@ -452,18 +472,41 @@ def training():
     print('****************Train the troops*******************')
     days = 10000
     while days != 0:
-            View_cities()
+            View_army()
             days = int(input('How many days do you want to train? 0 to exit.'))    
             if days == 0:
                 break    
             temp = [calendar,'Your army is training for '+str(days)+' days.']
             Journal = np.vstack((Journal,temp))
             calendar += days
+            drop_security()
             for i in range(days):
                 gain_xp(soldiers_available*train_exp,'s')
                 gain_xp(druids_available*train_exp,'d')
             update_army([])
             break
+    return()
+    
+def drop_security():
+    global citiyID
+    global attack_date
+
+    if calendar >= (attack_date + 30):
+        for i in range(1,len(Cities)): 
+            sec_lvl = int(Cities[i][3])
+            if sec_lvl > 1:
+                sec_lvl -=1
+                Cities[i][3]=sec_lvl #update security lvl
+                guards = int(Cities[i][5])
+                conscript = int(Cities[i][6])
+                warrior = int(Cities[i][9])
+                commoners = int(Cities[i][10])
+                print(commoners+m.ceil(conscript*sec_lvl*0.03))
+                #updates disrtibution to account for growing concern
+                Cities[i][10]= commoners + m.ceil(conscript*sec_lvl*0.03)
+                Cities[i][6]= conscript - m.ceil(conscript*sec_lvl*0.03) + m.ceil(guards*sec_lvl*0.02)
+                Cities[i][5]= guards - m.ceil(guards*sec_lvl*0.02) + m.ceil(warrior*sec_lvl*0.01)
+                Cities[i][9]= warrior - m.ceil(warrior*sec_lvl*0.01)
     return()
     
 def update_army(deadlist):
@@ -505,7 +548,9 @@ def update_army(deadlist):
         if army[i][1] == 'Druid1' or army[i][1] == 'Druid2' or army[i][1] == 'Druid3' or army[i][1] == 'Druid4':
             druids_available += int(army[i][0])
             druid_power += int(army[i][9])*int(army[i][0])
-            
+    if soldiers_available == 0:
+        print('You have no troops remaining. You have failed on your mission')
+        load_game()
     return()
        
 def Lookup_unit(unit, side, count):
@@ -590,6 +635,7 @@ def update_distance():
     global Known_cities
     global current_loc
     global city_loc
+    global cityID
     
     for i in range(1,len(Known_cities)):
         start = current_loc 
@@ -598,9 +644,13 @@ def update_distance():
         Known_cities[i][11]= distance
         if distance == 0:
             Known_cities[i][11]= 'X'
+    
+    cityID = np.argwhere(Known_cities == 'X')[0][0]
 
     return()
-
+def gen_cities():
+    
+    return()
 def Save_game():
     global gamestate
 
@@ -626,6 +676,8 @@ def load_game():
     global current_loc
     global Journal
     global calendar
+    global cityID
+    global attack_date
     
     game = 0
     city_units = np.genfromtxt('City unit stats.csv', dtype = str, delimiter = ',')
@@ -639,6 +691,7 @@ def load_game():
             update_army([])
             Known_cities = np.genfromtxt(os.path.join('newgame','Known Cities.csv'), dtype = str, delimiter = ',')  
             Journal = np.array([['Day','Event'],[1,'You wander upon a new town']])
+            attack_date = 0
             Save_game()
             game = 1
         else:
@@ -649,11 +702,15 @@ def load_game():
                 update_army([])
                 Known_cities = np.genfromtxt(os.path.join(gamestate,'Known Cities.csv'), dtype = str, delimiter = ',')  
                 game = 1
+                attack_date = int(Journal[np.argwhere(Journal =='Attacking the city')[len(np.argwhere(Journal =='Attacking the city'))-1][0]][0])
             except:
                 print('Cannot find file')
     cityID = np.argwhere(Known_cities == 'X')[0][0]
     current_loc = [city_loc[cityID][1],city_loc[cityID][2]]
     calendar = int(Journal[len(Journal)-1][0])
+        
+    print(Journal[len(Journal)-1][1],'\n')
+
     #print(Journal)
     return()       
 
@@ -666,13 +723,13 @@ global calendar
 idle_exp = 50
 train_exp = 100
 exp_list = [0,1300,3300,6000,10000,23000]    
-
+comm_druid = 5
 
 load_game()
 
 action = 0
-while action != 6:
-    print('It has been ', calendar,' days since you began your crusade.')
+while action != 8:
+    print('It has been ', calendar,' days since you began your crusade.\n')
     action = int(input('What would you like to do?\n'
                    '1. Scout a city\n'
                    '2. Gain support in a city\n'
@@ -680,7 +737,8 @@ while action != 6:
                    '4. Wait and train\n'
                    '5. View army\n'
                    '6. View cities\n'
-                   '7. End session and save\n'))
+                   '7. Save and continue\n'
+                   '8. End session and save\n'))
 
     if action ==1:
         Scout()
@@ -694,7 +752,9 @@ while action != 6:
         View_army()
     elif action ==6:
         View_cities()
-    elif action ==7:
+    elif action == 7:
+        Save_game()
+    elif action ==8:
         Save_game()
         print('Until next time')
         break

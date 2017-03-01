@@ -1,47 +1,8 @@
 Day,Event
 1,You wander upon a new town
-1,Scouts are travelling to Alta Floresta
-1,Scouting the area
-3,Scouts are travelling back to camp
-3,Your scouts have returned
-3,Army is moving to Alta Floresta
-3,Attacking the city
-3,Your army has settled into Alta Floresta
-3,You spend days converting the masses
-19,Your druids have converted the city back to nature
-19,Scouts are travelling to Apui
-22,Scouting the area
-23,Scouts are travelling back to camp
-26,Your scouts have returned
-26,Army is moving to Apui
-29,Attacking the city
-29,Your army has settled into Apui
-29,You spend days converting the masses
-41,Your druids have converted the city back to nature
-41,Scouts are travelling to Chamleon
-44,Scouting the area
-45,Scouts are travelling back to camp
-48,Your scouts have returned
-48,Army is moving to Chamleon
-51,Attacking the city
-51,Your army has settled into Chamleon
-51,You spend days converting the masses
-63,Your druids have converted the city back to nature
-63,Scouts are travelling to Biraba
-74,Scouting the area
-75,Scouts are travelling back to camp
-86,Your scouts have returned
-86,Army is moving to Biraba
-97,Attacking the city
-97,Your army has settled into Biraba
-97,You spend days converting the masses
-103,Your druids have converted the city back to nature
-103,Scouts are travelling to Treviso
-107,Scouting the area
-108,Scouts are travelling back to camp
-112,Your scouts have returned
-112,Army is moving to Treviso
-116,Attacking the city
-116,Your army has settled into Treviso
-116,You spend days converting the masses
-122,Your druids have converted the city back to nature
+1,Army is moving to Alta Floresta
+1,Attacking the city
+1,Your army has settled into Alta Floresta
+1,You spend days converting the masses
+24,Your druids have converted the city back to nature
+24,Your army is training for 7 days.
