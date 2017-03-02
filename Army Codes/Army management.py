@@ -28,6 +28,7 @@ def Reclaim_land():
         total_time = i+1
         gain_xp(XP,'d')
         gain_xp(soldiers_available*idle_exp,'s')
+        gain_xp(XP,'c')
     calendar += total_time
     temp = np.array([calendar, 'Your druids have converted the city back to nature'])
     Journal = np.vstack((Journal,temp))
@@ -43,6 +44,7 @@ def Attack_city():
     global Known_cities
     global Cities
     global attack_date
+    
     
     print('**************** Preparing for Battle **********************')    
     selection = 10000
@@ -108,7 +110,9 @@ def Attack_city():
                     city[9] = int(city[9])-1
                     known_city[9] = city[9]            
                     
-            update_army(result[4])
+            if update_army(result[4]) == 0:
+                load_game()
+                break
             View_army()
             
             total_exp = 0
@@ -116,12 +120,13 @@ def Attack_city():
                 total_exp += int(Encounter_stat[i][8])
             
             gain_xp(total_exp,'s')
-            
+            gain_xp(total_exp/100,'c')
             temp = [calendar,'Attacking the city']
             Journal = np.vstack((Journal,temp))
             calendar += int(round(result[5]/(24*60),0))
             
             print('\n The battle waged on for ', int(round(result[5],0)), ' minutes\n')
+            print('During the battle', len(result[4]),' fell in the service of Mal')
             if result[0]==1:
                 print('Your army has been DEFEATED. You have fallen back to the last city')
                 
@@ -159,11 +164,13 @@ def Attack_city():
                         confirm = str.lower(input('Would you like to attempt to convert? Otherwise we will just kill them? y/n '))
                         if confirm == 'y':
                             total_time +=time
-                            commoner_conv = m.floor(int(city[10])*(r.randint(1,20)+18-12)/100)
-                            scholar_conv = m.floor(int(city[7])*(r.randint(1,20)+18-16)/100)
-                            guard_conv = m.floor(int(city[5])*(r.randint(1,20)+18-15)/100)
-                            conscript_conv = m.floor(int(city[6])*(r.randint(1,20)+18-14)/100)
-                            warrior_conv = m.floor(int(city[6])*(r.randint(1,20)+18-18)/100)
+                            moral_bonus = m.ceil((int(city[6])+int(city[6])+int(city[9]))/int(city[10])+(int(city[10])/100))
+                            print(moral_bonus)
+                            commoner_conv = conversion(int(city[10]),2+moral_bonus)
+                            scholar_conv = conversion(int(city[7]),6+moral_bonus)
+                            guard_conv = conversion(int(city[5]),5+moral_bonus)
+                            conscript_conv = conversion(int(city[6]),4+moral_bonus)
+                            warrior_conv =conversion(int(city[9]),6+moral_bonus)
                             total_conv = commoner_conv+scholar_conv+guard_conv+conscript_conv+warrior_conv
                             print('You have converterted:\n')
                             print(commoner_conv,' commoners to level 1 soliders')
@@ -173,6 +180,7 @@ def Attack_city():
                             print(warrior_conv,' warriors to level 3 soldiers')
                             print('\n You have ', (2-i), ' tries left to convert the rest of the population')
                             gain_xp(total_conv*100,'d')
+                            gain_xp(total_conv,'c')
                         elif confirm == 'n':
                             break
                         else:
@@ -186,23 +194,30 @@ def Attack_city():
                             druid_conv+=1
                             sold_conv -=1
                     for j in range(sold_conv):
-                        roster = np.vstack((roster,['Sold1',0,1300,1]))
+                        roster = np.vstack((roster,['Sold1',exp_list[1],exp_list[2],1]))
                     for j in range(guard_conv):
-                        roster = np.vstack((roster,['Sold2',0,3300,2]))                        
+                        roster = np.vstack((roster,['Sold2',exp_list[2],exp_list[3],2]))                        
                     for j in range(warrior_conv):
-                        roster = np.vstack((roster,['Sold3',0,6000,3]))
+                        roster = np.vstack((roster,['Sold3',exp_list[3],exp_list[4],3]))
                     for j in range(scholar_conv+druid_conv):
-                        roster = np.vstack((roster,['Druid1',0,1300,1]))
+                        roster = np.vstack((roster,['Druid1',exp_list[1],exp_list[5],1]))
                     print(druid_conv,' commoners have shown connection to nature and have become Druids')
                     symp_conv = 0
                     update_army([])
                     #update city numbers
                     city[10] = int(city[10])-commoner_conv
+                    commoner_esc = 0
+                    for j in range(int(city[10])):
+                        if r.randint(1,20)+m.ceil(int(city[10])/100)>r.randint(1,20)+m.ceil(int(soldiers_available)/100):
+                            commoner_esc+=1
+                    city[10] = int(city[10])-commoner_esc
                     city[7] = int(city[7]) - scholar_conv
                     city[5] = int(city[5]) - guard_conv
                     city[6] = int(city[6])- conscript_conv
                     city[9] = int(city[9]) - warrior_conv
                     city[8] = 0
+                    Cities[selection+1][10] = int(Cities[selection+1][10])+commoner_esc
+                    print(commoner_esc, ' of the population escaped during the night')
                 
                 temp = np.array([calendar, 'You spend days converting the masses'])
                 Journal = np.vstack((Journal,temp))
@@ -237,19 +252,22 @@ def Attack_city():
                         Known_cities = np.vstack((Known_cities,new_city))
             
             #Update security level of city win or lose
-            for i in range(1,3):   
-                Cities[selection+i][3]=int(Cities[selection+i][3])+1 #update security lvl
-                sec_lvl = int(Cities[selection+i][3])
-                guards = int(Cities[selection+i][5])
-                conscript = int(Cities[selection+i][6])
-                warrior = int(Cities[selection+i][9])
-                commoners = int(Cities[selection+i][10])
-                
-                #updates disrtibution to account for growing concern
-                Cities[selection+i][10]= commoners - m.ceil(commoners*sec_lvl*0.03)
-                Cities[selection+i][6]= conscript + m.ceil(commoners*sec_lvl*0.03) - m.ceil(conscript*sec_lvl*0.02)
-                Cities[selection+i][5]= guards + m.ceil(conscript*sec_lvl*0.02) - m.ceil(guards*sec_lvl*0.01)
-                Cities[selection+i][9]= warrior + m.ceil(guards*sec_lvl*0.01)
+            for i in range(-2,3):
+                try:
+                    Cities[selection+i][3]=int(Cities[selection+i][3])+1 #update security lvl
+                    sec_lvl = int(Cities[selection+i][3])
+                    guards = int(Cities[selection+i][5])
+                    conscript = int(Cities[selection+i][6])
+                    warrior = int(Cities[selection+i][9])
+                    commoners = int(Cities[selection+i][10])
+                    
+                    #updates disrtibution to account for growing concern
+                    Cities[selection+i][10]= commoners - m.ceil(commoners*sec_lvl*0.03)
+                    Cities[selection+i][6]= conscript + m.ceil(commoners*sec_lvl*0.03) - m.ceil(conscript*sec_lvl*0.02)
+                    Cities[selection+i][5]= guards + m.ceil(conscript*sec_lvl*0.02) - m.ceil(guards*sec_lvl*0.01)
+                    Cities[selection+i][9]= warrior + m.ceil(guards*sec_lvl*0.01)
+                except:
+                    print()
                 
             break
         elif confirm == 'n':
@@ -280,8 +298,8 @@ def Scout():
             scout_time= m.ceil(size/(scouts*100000))
             travel_time =  Map.Travel_route(current_loc,[city_loc[selection][1],city_loc[selection][2]])               
             time = int(scout_time +2*travel_time)
-            randmin= .5+((scouts/10)-(scout_time/100))
-            randmax= 1.5-((scouts/10)-(scout_time/100))
+            randmin= max(1-(0.5/scouts)-((scout_time+travel_time)/100),0)
+            randmax= min(1+(0.5/scouts)+((scout_time+travel_time)/100),2)
             accuracy =int((1-randmin)*100)
             print('Scouting will take',int(time),'days with +/- ',accuracy,'% accuracy.')
             confirm = str.lower(input('Are you sure? (y/n) '))
@@ -418,7 +436,7 @@ def Gain_support():
                         #print('Day ',(days+1),': Preaching in the city')
                         convert_chk = 0
                         for i in range(druids):                  
-                            convert_chk = r.unifrom(0,3)/100
+                            convert_chk = r.uniform(0,3)/100
                             convert_chk +=convert_chk
                         added_symp = m.ceil(convert_chk*Commoner)
                         Symp += added_symp
@@ -465,6 +483,13 @@ def Gain_support():
                 print()     
                   
     return()
+def conversion(number,save):
+    convert = 0
+    for j in range(number):
+        if (r.randint(1,20)+intim) > (r.randint(1,20)+save):
+            convert+=1
+    return(convert)
+    
 def training():
     global Journal
     global calendar
@@ -483,6 +508,7 @@ def training():
             for i in range(days):
                 gain_xp(soldiers_available*train_exp,'s')
                 gain_xp(druids_available*train_exp,'d')
+                gain_xp(100,'c')
             update_army([])
             break
     return()
@@ -501,7 +527,6 @@ def drop_security():
                 conscript = int(Cities[i][6])
                 warrior = int(Cities[i][9])
                 commoners = int(Cities[i][10])
-                print(commoners+m.ceil(conscript*sec_lvl*0.03))
                 #updates disrtibution to account for growing concern
                 Cities[i][10]= commoners + m.ceil(conscript*sec_lvl*0.03)
                 Cities[i][6]= conscript - m.ceil(conscript*sec_lvl*0.03) + m.ceil(guards*sec_lvl*0.02)
@@ -550,7 +575,7 @@ def update_army(deadlist):
             druid_power += int(army[i][9])*int(army[i][0])
     if soldiers_available == 0:
         print('You have no troops remaining. You have failed on your mission')
-        load_game()
+        return(0)
     return()
        
 def Lookup_unit(unit, side, count):
@@ -583,6 +608,7 @@ def Lookup_unit(unit, side, count):
         return()
     
 def gain_xp(exp,unit):
+    global intim
     if unit == 's':
         unit_exp = int(exp/soldiers_available)
         for i in range(1,len(roster)):
@@ -591,7 +617,7 @@ def gain_xp(exp,unit):
                 if int(roster[i][1])>=int(roster[i][2]) and int(roster[i][3])<4: #level up
                     lvl = int(roster[i][3])+1                    
                     roster[i][3] = lvl
-                    roster[i][2] = 350*(lvl+1)**2 + 250*(lvl+1) - 600
+                    roster[i][2] = exp_list[lvl+1]
                     roster[i][0] = "Sold"+str(lvl)
     elif unit == 'd':
         unit_exp = int(exp/druids_available)
@@ -601,8 +627,17 @@ def gain_xp(exp,unit):
                 if int(roster[i][1])>=int(roster[i][2])and int(roster[i][3])<4: #level up
                     lvl = int(roster[i][3])+1                    
                     roster[i][3] = lvl
-                    roster[i][2] = 350*(lvl+1)**2 + 250*(lvl+1) - 600
+                    roster[i][2] = exp_list[lvl+1]
                     roster[i][0] = "Druid"+str(lvl)
+    elif unit == 'c':
+        unit_exp = int(exp)
+        Character[1][1]=int(Character[1][1])+unit_exp #add experience to each unit
+        if int(Character[1][1])>=int(Character[1][2]): #level up
+            lvl = int(Character[1][3])+1                    
+            Character[1][3] = lvl
+            Character[1][2] = exp_list[lvl+1]
+            Character[1][4] = int(Character[1][4])+3
+        intim = int(Character[1][4])
     else:
         print('No units of that type')
     
@@ -651,6 +686,7 @@ def update_distance():
 def gen_cities():
     
     return()
+    
 def Save_game():
     global gamestate
 
@@ -661,7 +697,7 @@ def Save_game():
     np.savetxt(os.path.join(gamestate,'Full Roster.csv'), roster, fmt='%.20s', delimiter = ',')
     np.savetxt(os.path.join(gamestate,'Known Cities.csv'),Known_cities,  fmt='%.20s',  delimiter = ',')
     np.savetxt(os.path.join(gamestate,'Journal.csv'),Journal,fmt='%.50s',delimiter = ',')
-    
+    np.savetxt(os.path.join(gamestate,'Character.csv'),Character,fmt='%.20s',delimiter=',')
     return()
 def load_game():
     global Army
@@ -678,6 +714,7 @@ def load_game():
     global calendar
     global cityID
     global attack_date
+    global Character
     
     game = 0
     city_units = np.genfromtxt('City unit stats.csv', dtype = str, delimiter = ',')
@@ -691,6 +728,9 @@ def load_game():
             update_army([])
             Known_cities = np.genfromtxt(os.path.join('newgame','Known Cities.csv'), dtype = str, delimiter = ',')  
             Journal = np.array([['Day','Event'],[1,'You wander upon a new town']])
+            Character = np.genfromtxt(os.path.join('newgame','Character.csv'),dtype = str, delimiter = ",")
+            name =str(input("What is your crusader's name?"))
+            Character[1][0] = str.lower(name)
             attack_date = 0
             Save_game()
             game = 1
@@ -703,6 +743,8 @@ def load_game():
                 Known_cities = np.genfromtxt(os.path.join(gamestate,'Known Cities.csv'), dtype = str, delimiter = ',')  
                 game = 1
                 attack_date = int(Journal[np.argwhere(Journal =='Attacking the city')[len(np.argwhere(Journal =='Attacking the city'))-1][0]][0])
+                Character = np.genfromtxt(os.path.join(gamestate,'Character.csv'),dtype = str, delimiter = ",")
+
             except:
                 print('Cannot find file')
     cityID = np.argwhere(Known_cities == 'X')[0][0]
@@ -722,7 +764,7 @@ global calendar
 #game parameters
 idle_exp = 50
 train_exp = 100
-exp_list = [0,1300,3300,6000,10000,23000]    
+exp_list = [0,0,2000,5000,9000,15000,23000,35000,51000,75000,105000]    
 comm_druid = 5
 
 load_game()
@@ -760,4 +802,13 @@ while action != 8:
         break
     else:
         print('You need to pick an action')
-    
+
+#######Improvements to make
+#Increase in security forwards and backwards
+#Randomize cities on new game
+#Druid vs Character conversion
+#Rebellions
+#Consolidate scout, gain support, and rebellion into one menu
+#GUI
+#Random attacks on army
+#Roll stats for character
