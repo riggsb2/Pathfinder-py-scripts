@@ -1,4 +1,5 @@
 Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg Rng,Crit,Exp,Level
+Symp,10,13,3,1,6,20,0,1
 Sold1,11,13,5,1,6,20,0,1
 Sold2,25,13,6,6,10,20,1300,2
 Sold3,33,15,7,8,10,20,3300,3
