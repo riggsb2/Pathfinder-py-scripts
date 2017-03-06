@@ -1,11 +1,3 @@
-Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg rng,Crit,Exp,Pos
-1,Warriors,19,18,5,3,10,20,1163,4
-1,Warriors,19,18,5,3,10,20,1163,4
-1,Conscripts,9,14,4,1,6,20,411,1
-1,Warriors,19,18,5,3,10,20,1163,4
-1,Warriors,19,18,5,3,10,20,1163,4
+Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg rng,Crit,Exp,Level
 1,Guards,15,17,5,2,6,20,581,2
-1,Guards,15,17,5,2,6,20,581,2
-1,Conscripts,9,14,4,1,6,20,411,1
-1,Guards,15,17,5,2,6,20,581,2
-1,Warriors,19,18,5,3,10,20,1163,4
+6,Conscripts,9,14,4,1,6,20,2466,1

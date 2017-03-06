@@ -1,11 +1,2 @@
-Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg rng,Crit,Exp,Pos
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
-1,Sold1,11,13,5,1,6,20,411,1
+Number,Type,HP,AC,Hit Bonus,Dmg Bonus,Dmg rng,Crit,Exp,Level
+18,Symp,10,13,3,1,6,20,7398,1
