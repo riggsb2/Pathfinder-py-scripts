@@ -1,2 +1,5 @@
 Location ID,Name,Development,Security lvl,Area,Guards,Conscripts,Scholars,Sympathizers,Warriors,Commoners,Distance
-1,Alta Floresta,,,,,,,,,,X
+1,Alta Floresta,1,1,125000,0,6,0,1,0,72,X
+2,Apui,1,,248107,,,,,,,3
+3,Jardim,1,,313645,,,,,,,6
+4,Chamleon,1,,437699,,,,,,,6

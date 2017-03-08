@@ -284,38 +284,82 @@ def Attack_city():
     #Print out city list    
     return()
 def Send_troops():
+    global Journal
+    global calendar
     print('********* Send troops out on a mission ************')
     subaction = 1000
     selection = 1000
+    support_time = 0
+    rebel_time = 0
+    scout_time = 0
+    travel_time = 0
     actions=[]
-    while subaction != 0:        
+    
+    while subaction != 0 and len(actions)<3:        
         subaction = int(input('What would you like to do (enter all that apply with spaces)?\n'
                '1. Scout the city\n'
                '2. Bolster sympathy for your cause\n'
                '3. Incite a rebellion\n'
                '0. Done\n'))
-        actions.append(subaction)
-    
-    while selection != 0:
-        View_cities()
-        selection = int(input('Which city would you like send your troops to? 0 to exit.'))    
-        if selection != 0:
-            Lookup_city(selection)
-            break
-    
-    if 2 in actions:
-        support_time = Gain_support(selection)
-    if 3 in actions:
-        rebel_time = Rebellion(selection)
-    if 1 in actions:    
-        scout_time = Scout(selection)
-    
+        if subaction != 0:
+            actions.append(subaction)
+    if actions:
+        while str(selection) not in Known_cities[1:,0]:
+        #while selection !=0:
+            View_cities()
+            selection = int(input('Which city would you like send your troops to? 0 to exit.'))    
+            if selection != 0:
+                Lookup_city(selection)
+                travel_time =  Map.Travel_route(current_loc,[city_loc[selection][1],city_loc[selection][2]])   
+                break
+            if selection == 0:
+                actions = []
+                
+        event = 'Your men went to: '
+        if 2 in actions:
+            support_time = Gain_support(selection)
+            event = event + 'preach '
+        if 3 in actions:
+            rebel_time = Rebellion(selection)
+            event = event + 'incite a riot '
+        if 1 in actions:
+            scout_time = Scout(selection)
+            event = event +'scout.'
+        
+        out_time = max(support_time,rebel_time,scout_time)
+        
+        for i in range(travel_time):
+            drop_security()
+            raid()
+            gain_xp(soldiers_available*idle_exp,'s')
+            gain_xp(druids_available*idle_exp,'d')
+            temp = [calendar,'Troops are traveling to '+ city[1]]
+            Journal = np.vstack((Journal,temp))
+        calendar += travel_time
+        
+        for i in range(out_time):
+            drop_security()
+            raid()
+            gain_xp(soldiers_available*idle_exp,'s')
+            gain_xp(druids_available*idle_exp,'d')
+            temp = [calendar,event]
+            Journal = np.vstack((Journal,temp))
+        calendar += out_time    
+        
+        for i in range(travel_time):
+            drop_security()
+            raid()
+            gain_xp(soldiers_available*idle_exp,'s')
+            gain_xp(druids_available*idle_exp,'d')
+            temp = [calendar,'Troops are traveling back to camp ']
+            Journal = np.vstack((Journal,temp))
+        calendar += travel_time
+        
+    print()
     return()
     
 def Scout(selection):
     global Known_cities
-    global Journal
-    global calendar
     print('****************Scouting*******************')
     scouts = 1000
     confirm = 'z'
@@ -330,29 +374,16 @@ def Scout(selection):
                 size = int(city[4])
                 scout_time= m.ceil(size/(scouts*100000))
                 travel_time =  Map.Travel_route(current_loc,[city_loc[selection][1],city_loc[selection][2]])               
-                time = int(scout_time +2*travel_time)
+                total_time = int(scout_time +2*travel_time)
                 randmin= max(1-(0.5/scouts)-((scout_time+travel_time)/100),0)
                 randmax= min(1+(0.5/scouts)+((scout_time+travel_time)/100),2)
                 accuracy =int((1-randmin)*100)
-                print('Scouting will take',int(time),'days with +/- ',accuracy,'% accuracy.')
+                print('Scouting will take',int(total_time),'days with +/- ',accuracy,'% accuracy.')
                 while confirm !='y' and confirm != 'n':
                     confirm = str.lower(input('Are you sure? (y/n) '))
                     if confirm == 'y':
                         print('The scouts are off!')
-                        
-                        temp = [calendar,'Scouts are travelling to '+ city[1]]
-                        Journal = np.vstack((Journal,temp))
-                        calendar += travel_time
-                        temp = [calendar,'Scouting the area']
-                        Journal = np.vstack((Journal,temp))
-                        calendar += scout_time
-                        temp = np.array([calendar, 'Scouts are travelling back to camp'])
-                        Journal = np.vstack((Journal,temp))
-                        calendar += travel_time
-                        temp = np.array([calendar, 'Your scouts have returned'])
-                        Journal = np.vstack((Journal,temp))
-                        drop_security()
-                                            
+                            
                         gained_intel =[city[0],city[1],city[2],city[3],city[4],
                                        int(r.uniform(randmin,randmax)*int(city[5])),
                                        int(r.uniform(randmin,randmax)*int(city[6])),
@@ -376,22 +407,17 @@ def Scout(selection):
                                              Cities[selection+i][2],'',Cities[selection+i][4],
                                              '','','','','','',distance]
                                 Known_cities = np.vstack((Known_cities,new_city))
-                        for i in range(time):
-                            gain_xp(soldiers_available*idle_exp,'s')
-                            gain_xp(druids_available*idle_exp,'d')
-                            raid()
                 
                         View_cities()
                     elif confirm == 'n':
                         print()
+                        break
                     else:
                         print()
     print()
-    return(time)
+    return(scout_time)
     
 def Gain_support(selection):
-    global Journal
-    global calendar
     print('****************Gain some supporters*******************')
     druids = 1000
     soldiers = 1000
@@ -425,11 +451,6 @@ def Gain_support(selection):
                     total_added = 0
                     Guards_killed = 0
                     soldiers_killed = 0
-                    travel_time =  Map.Travel_route(current_loc,[city_loc[selection][1],city_loc[selection][2]])               
-        
-                    temp = [calendar,'Druids are travelling to '+ city[1]]
-                    Journal = np.vstack((Journal,temp))
-                    calendar += travel_time
             
                     for i in range(time):
                         if r.uniform(0,1) < Encounter and Guards>0:
@@ -480,22 +501,11 @@ def Gain_support(selection):
                             print('All your soldiers were killed. The druids returned early')
                             break
                         days +=1
-                        
-                        raid()
-        
+                                
                     city[5] = Guards
                     city[8] = Symp
                     city[10] = Commoner
                     
-                    temp = [calendar,'Druids praised your name for '+str(days)+' days.']
-                    Journal = np.vstack((Journal,temp))
-                    calendar += days
-                    temp = np.array([calendar, 'Druids are headed back to camp'])
-                    Journal = np.vstack((Journal,temp))
-                    calendar += travel_time
-                    temp = np.array([calendar, 'Your scouts have returned'])
-                    Journal = np.vstack((Journal,temp))
-                    drop_security()
                     try: #in case the place they know nothing
                         known_city[5] = int(known_city[5])-Guards_killed
                         known_city[8] = int(known_city[8])+total_added
@@ -503,149 +513,133 @@ def Gain_support(selection):
                     except:
                         print()
                     
-                    for i in range(2*travel_time+days):
-                        gain_xp(soldiers_available*idle_exp,'s')
-                        gain_xp(druids_available*idle_exp,'d')
-                    print('Your druids have retuned after ', days,' days of preaching.')
                     print('You have gained ', total_added,' sympathizers in ', city[1])
                     print()
                 elif confirm == 'n':
                     print('Look again at the cities')
+                    break
                 else:
                     print()     
                       
-    return()
+    return(days)
 
 def Rebellion(selection):
-    global Journal
-    global calendar
     print('****************Incite a Riot*******************')
     soldiers = 1000
-    days = 0
     time = 0
+    days = 0
+    confirm = 'z'
     if city.size:
-        while soldiers > soldiers_available:
-            soldiers = int(input('How many soldiers will you send to incite a riot? '))
-            if soldiers > soldiers_available:
-                print('You only have ', soldiers_available, 'available. Try again.')
-        while days <=0:
-            days = int(input('How long should they stay in the city? '))
-        print(soldiers, ' soldiers are off to cause trouble for ', days, 'days.')
-        confirm = str.lower(input('Are you sure? (y/n) '))
-        if confirm == 'y':
-            print('\n Your mission is off!')
-            area = int(city[4])/43560 #land area in acres
-            Conscripts = int(city[6])
-            Symp = int(city[8])
-            travel_time =  Map.Travel_route(current_loc,[city_loc[selection][1],city_loc[selection][2]])               
-
-            temp = [calendar,'Soldiers are travelling to '+ city[1]]
-            Journal = np.vstack((Journal,temp))
-            calendar += travel_time
-    
-            for i in range(days):
-                convinced = 0
-                time+=1
-                if convinced >= Symp*0.25:
-                    break
-                Guards = int(city[5])
-                Encounter = ((soldiers)/area)*(Guards/area)
-
-                if r.uniform(0,1) < Encounter and Guards>0:
-                    #Sets up guard encounter
-                    attackers = m.ceil(Guards/area)
-                    Encounter_stat = np.array(['Number',"Type",
-                                               'HP','AC','Hit Bonus','Dmg Bonus',
-                                               'Dmg rng','Crit','Exp','Pos'])
-                    unit_stat = Lookup_unit('Guards','City',attackers)
-                    Encounter_stat = np.vstack((Encounter_stat,unit_stat))
-                    np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")
-                    
-                    #Sets up soldier and druid stat blocks
-                    Encounter_stat = np.array(['Number',"Type",
-                                               'HP','AC','Hit Bonus','Dmg Bonus',
-                                               'Dmg rng','Crit','Exp','Level'])
-                    unit_stat = Lookup_unit('Sold1','Enemy',soldiers)
-                    Encounter_stat = np.vstack((Encounter_stat,unit_stat))
-                    np.savetxt('Enemy.csv', Encounter_stat,fmt='%.20s', delimiter=",")                       
-                    
-                    #Uses battlecode to determine outcome
-                    result = b.battle('Ally.csv','Enemy.csv',1)
-                    
-                    #Removes guards killed by encounter
-                    unique, counts = np.unique(result[3], return_counts = True)            
-                    city_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
-                    
-                    for j in range(len(city_killed)):
-                        if city_killed[i][0] == 'Guards':
-                            city[5] = int(city[5])-int(city_killed[j][1])
-                    
-                    soldiers-=len(result[4])
-                    update_army(result[4])
-
-                else:
-                    for j in range(int(city[8])):
-                        if r.randint(1,20)+soldiers>r.randint(1,20):
-                            convinced +=1
+        while confirm != 'y':
+            while soldiers > soldiers_available:
+                soldiers = int(input('How many soldiers will you send to incite a riot? '))
+                if soldiers > soldiers_available:
+                    print('You only have ', soldiers_available, 'available. Try again.')
+            while time <=0:
+                time = int(input('How long should they stay in the city? '))
+            print(soldiers, ' soldiers are off to cause trouble for ', time, 'days.')
+            confirm = str.lower(input('Are you sure? (y/n) '))
+            if confirm == 'y':
+                print('\n Your mission is off!')
+                area = int(city[4])/43560 #land area in acres
+                Conscripts = int(city[6])
+                Symp = int(city[8])      
+                for i in range(time):
+                    convinced = 0
+                    days+=1
                     if convinced >= Symp*0.25:
-                        print('Your men have sucessfully incited a riot!')
-                        #Set up revolt
+                        break
+                    Guards = int(city[5])
+                    Encounter = ((soldiers)/area)*(Guards/area)
+    
+                    if r.uniform(0,1) < Encounter and Guards>0:
+                        #Sets up guard encounter
+                        attackers = m.ceil(Guards/area)
+                        Encounter_stat = np.array(['Number',"Type",
+                                                   'HP','AC','Hit Bonus','Dmg Bonus',
+                                                   'Dmg rng','Crit','Exp','Pos'])
+                        unit_stat = Lookup_unit('Guards','City',attackers)
+                        Encounter_stat = np.vstack((Encounter_stat,unit_stat))
+                        np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")
+                        
+                        #Sets up soldier and druid stat blocks
                         Encounter_stat = np.array(['Number',"Type",
                                                    'HP','AC','Hit Bonus','Dmg Bonus',
                                                    'Dmg rng','Crit','Exp','Level'])
-                        unit_stat = Lookup_unit('Guards','City',Guards)
-                        Encounter_stat = np.vstack((Encounter_stat,unit_stat)) 
-                        unit_stat = Lookup_unit('Conscripts','City',Conscripts)
-                        Encounter_stat = np.vstack((Encounter_stat,unit_stat)) 
-                        np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")
-                        
-                        #Sets up sympathizers stat blocks
-                        Encounter_stat = np.array(['Number',"Type",
-                                       'HP','AC','Hit Bonus','Dmg Bonus',
-                                       'Dmg rng','Crit','Exp','Level'])
-                        unit_stat = Lookup_unit('Symp','Enemy',Symp)
+                        unit_stat = Lookup_unit('Sold1','Enemy',soldiers)
                         Encounter_stat = np.vstack((Encounter_stat,unit_stat))
                         np.savetxt('Enemy.csv', Encounter_stat,fmt='%.20s', delimiter=",")                       
                         
                         #Uses battlecode to determine outcome
-                        result = b.battle('Ally.csv','Enemy.csv',1) #Alter battlecode for to the death
+                        result = b.battle('Ally.csv','Enemy.csv',1)
                         
                         #Removes guards killed by encounter
                         unique, counts = np.unique(result[3], return_counts = True)            
                         city_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
                         
                         for j in range(len(city_killed)):
-                            if city_killed[j][0] == 'Guards':
+                            if city_killed[i][0] == 'Guards':
                                 city[5] = int(city[5])-int(city_killed[j][1])
-                            if city_killed[j][0] == 'Conscripts':
-                                city[6] = int(city[6])-int(city_killed[j][1])
                         
-                        unique, counts = np.unique(result[4], return_counts = True)            
-                        symp_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
-                        for j in range(len(symp_killed)):
-                            if symp_killed[j][0] == 'Symp':
-                                city[8] = int(city[8])-int(symp_killed[j][1])
-                        break
-               
-                if soldiers<=0:
-                    print('All your soldiers were killed.')
-                    break                
-                raid()
-
-            temp = [calendar,'Soldiers tried to incite a riot'+ city[1]]
-            Journal = np.vstack((Journal,temp))
-            calendar += time
-            
-            temp = [calendar,'Soldiers are heading back to camp '+ city[1]]
-            Journal = np.vstack((Journal,temp))
-            calendar += travel_time
-        elif confirm =='n':
-            print('Look again at the cities')
-   
-        else:
-            print()
-            
-    return()
+                        soldiers-=len(result[4])
+                        update_army(result[4])
+    
+                    else:
+                        for j in range(int(city[8])):
+                            if r.randint(1,20)+soldiers>r.randint(1,20):
+                                convinced +=1
+                        if convinced >= Symp*0.25:
+                            print('Your men have sucessfully incited a riot!')
+                            #Set up revolt
+                            Encounter_stat = np.array(['Number',"Type",
+                                                       'HP','AC','Hit Bonus','Dmg Bonus',
+                                                       'Dmg rng','Crit','Exp','Level'])
+                            unit_stat = Lookup_unit('Guards','City',Guards)
+                            Encounter_stat = np.vstack((Encounter_stat,unit_stat)) 
+                            unit_stat = Lookup_unit('Conscripts','City',Conscripts)
+                            Encounter_stat = np.vstack((Encounter_stat,unit_stat)) 
+                            np.savetxt('Ally.csv', Encounter_stat,fmt='%.20s', delimiter=",")
+                            
+                            #Sets up sympathizers stat blocks
+                            Encounter_stat = np.array(['Number',"Type",
+                                           'HP','AC','Hit Bonus','Dmg Bonus',
+                                           'Dmg rng','Crit','Exp','Level'])
+                            unit_stat = Lookup_unit('Symp','Enemy',Symp)
+                            Encounter_stat = np.vstack((Encounter_stat,unit_stat))
+                            np.savetxt('Enemy.csv', Encounter_stat,fmt='%.20s', delimiter=",")                       
+                            
+                            #Uses battlecode to determine outcome
+                            result = b.battle('Ally.csv','Enemy.csv',1) #Alter battlecode for to the death
+                            
+                            #Removes guards killed by encounter
+                            unique, counts = np.unique(result[3], return_counts = True)            
+                            city_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
+                            
+                            for j in range(len(city_killed)):
+                                if city_killed[j][0] == 'Guards':
+                                    city[5] = int(city[5])-int(city_killed[j][1])
+                                if city_killed[j][0] == 'Conscripts':
+                                    city[6] = int(city[6])-int(city_killed[j][1])
+                            
+                            unique, counts = np.unique(result[4], return_counts = True)            
+                            symp_killed = np.array([(key,val) for (key,val) in dict(zip(unique,counts)).items()],dtype=str)
+                            for j in range(len(symp_killed)):
+                                if symp_killed[j][0] == 'Symp':
+                                    city[8] = int(city[8])-int(symp_killed[j][1])
+                            break
+                   
+                    if soldiers<=0:
+                        print('All your soldiers were killed.')
+                        break                
+                    raid()
+    
+            elif confirm =='n':
+                print('Look again at the cities')
+       
+            else:
+                print()
+                
+    return(days)
 
 def raid():
     global roster
@@ -698,22 +692,22 @@ def training():
     print('****************Train the troops*******************')
     days = 10000
     while days != 0:
-            View_army()
-            days = int(input('How many days do you want to train? 0 to exit.'))    
-            if days == 0:
-                break    
-            temp = [calendar,'Your army is training for '+str(days)+' days.']
-            Journal = np.vstack((Journal,temp))
-            calendar += days
-            drop_security()
-            for i in range(days):
-                gain_xp(soldiers_available*train_exp,'s')
-                gain_xp(druids_available*train_exp,'d')
-                gain_xp(100,'c')
-                raid()
+        View_army()
+        days = int(input('How many days do you want to train? 0 to exit.'))    
+        if days == 0:
+            break    
+        temp = [calendar,'Your army is training for '+str(days)+' days.']
+        Journal = np.vstack((Journal,temp))
+        calendar += days
+        drop_security()
+        for i in range(days):
+            gain_xp(soldiers_available*train_exp,'s')
+            gain_xp(druids_available*train_exp,'d')
+            gain_xp(100,'c')
+            raid()
 
-            update_army([])
-            break
+        update_army([])
+        break
     return()
     
 def drop_security():
@@ -856,6 +850,7 @@ def Lookup_city(selection):
         if selection == int(Known_cities[i][0]):
             known_city = Known_cities[i]
             print(known_city)
+            print()
         if selection == int(Cities[i][0]):
             city = Cities[i]  
     return()
@@ -929,7 +924,8 @@ def load_game():
     Army_units = np.genfromtxt('Army unit stats.csv', dtype = str, delimiter = ',')
     city_loc = np.genfromtxt('City locations.csv',dtype = int, delimiter = ",")
     while game ==0:    
-        gamestate = str.lower(input('Load game as (0 for new game):'))
+        gamestate = str.lower(input('Load game as (0 for new game): '))
+        print()
         if gamestate == '0':
             Cities = np.genfromtxt(os.path.join('newgame','City list.csv'), dtype = str, delimiter = ',')
             roster = np.genfromtxt(os.path.join('newgame','Full roster.csv'),dtype = str, delimiter = ",")
@@ -943,20 +939,21 @@ def load_game():
             Save_game()
             game = 1
         else:
-            try:
+            try:            
                 Cities = np.genfromtxt(os.path.join(gamestate,'City list.csv'), dtype = str, delimiter = ',')
                 roster = np.genfromtxt(os.path.join(gamestate,'Full roster.csv'),dtype = str, delimiter = ",")
                 Journal = np.genfromtxt(os.path.join(gamestate,'Journal.csv'),dtype = str, delimiter = ",")
                 update_army([])
                 Known_cities = np.genfromtxt(os.path.join(gamestate,'Known Cities.csv'), dtype = str, delimiter = ',')  
                 game = 1
-                attack_date = int(Journal[np.argwhere(Journal =='Attacking the city')[len(np.argwhere(Journal =='Attacking the city'))-1][0]][0])
-                if not attack_date:
+                try:
+                    attack_date = int(Journal[np.argwhere(Journal =='Attacking the city')[len(np.argwhere(Journal =='Attacking the city'))-1][0]][0])
+                except:
                     attack_date = 0
                 Character = np.genfromtxt(os.path.join(gamestate,'Character.csv'),dtype = str, delimiter = ",")
-
             except:
-                print('Cannot find file')
+                print('Cannot file file. Try a new name')
+                game = 0
     cityID = np.argwhere(Known_cities == 'X')[0][0]
     current_loc = [city_loc[cityID][1],city_loc[cityID][2]]
     calendar = int(Journal[len(Journal)-1][0])
@@ -1008,14 +1005,14 @@ while action != 7:
         Save_game()
         print('Until next time')
         break
+
     else:
         print('You need to pick an action')
 
 #######Improvements to make
 #Randomize cities on new game
 #Druid vs Character conversion
-#Consolidate scout, gain support, and rebellion into one menu
 #GUI
 #Roll stats for character
 #xheck for the right input
-#bug on loading game when you haven't attacked a city (finding attack date)
+#fix y/n confirmation
